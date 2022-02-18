@@ -1,0 +1,24 @@
+filebeat.autodiscover:
+  providers:
+    - type: docker
+      templates:
+        - condition:
+            equals:
+              docker.container.name: filebeat
+          config:
+            - type: docker
+              container.ids:
+                - "${data.docker.container.id}"
+
+filebeat.inputs:
+- type: log
+  enabled: true
+  paths:
+    - /var/log/test.log
+
+output.logstash:
+  hosts: ["logstash:5044"]
+
+#output.file:
+#  path: "/tmp/filebeat"
+#  filename: filebeat

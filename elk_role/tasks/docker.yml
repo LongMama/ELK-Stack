@@ -1,0 +1,22 @@
+---
+- name: Generate docker-compose.yml
+  template:
+    src : "../templates/docker-compose.j2"
+    dest: "{{ dest_folder }}/docker-compose.yaml"
+
+- name: Generate docker_filebeat.yml
+  template:
+    src : "../templates/docker_filebeat.j2"
+    dest: "{{ dest_folder }}/filebeat/Dockerfile"
+
+- name: Tear down existing containers
+  docker_compose:
+    project_src: "{{ dest_folder }}"
+    state: absent
+
+- name: Run docker-compose
+  docker_compose:
+    project_src: "{{ dest_folder }}"
+    build: yes
+...
+

@@ -1,0 +1,42 @@
+version: '3.8'
+services:
+  elasticsearch:
+    container_name: elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:{{ version }}
+    ports:
+      - 9200:9200
+      - 9300:9300
+    environment:
+      - discovery.type=single-node
+      - cluster.name=docker-
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+
+  logstash:
+    container_name: logstash
+    image: docker.elastic.co/logstash/logstash:{{ version }}
+    ports:
+      - 5044:5044
+    environment:
+      SERVER_NAME: logstash.local
+    volumes:
+      - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
+
+  filebeat:
+    container_name: filebeat
+    build:
+      context: .
+      dockerfile: filebeat/Dockerfile
+    volumes:
+      - ./logs:/var/log
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:{{ version }}
+    ports:
+      - 5601:5601
